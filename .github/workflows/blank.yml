@@ -1,0 +1,119 @@
+import time
+
+class Quiz:
+    def __init__(self):
+        print("***Welcome to Guess Word Quiz!***")
+        self.question=[]
+        self.question.append('sleepy')
+        self.question.append('gently')
+        self.question.append('angry')
+        self.question.append('salty')
+        self.question.append('noisy')
+        self.question.append('easily')
+        self.question.append('ashamedly')
+        self.listQuest=[]
+        for i in self.question:
+            self.listQuest.append(Quiz.convert(i))
+        for i in self.listQuest:
+            for x in range(len(i)):
+                if x!=2:
+                    i[x]=' _ '
+        self.status=[0,0,0,0,0,0,0]
+        
+    def getQuestion(self, index):
+        return self.question[index]
+
+    @staticmethod
+    def convert(question):
+        listQuestion=[]
+        listQuestion[:0]=question
+        return listQuestion       
+        
+    def cetak_papan(self):
+        print("Question: \n")
+        for i in self.listQuest:
+            for x in range(len(i)):
+                print(i[x], end='')
+            print()
+
+    def cekIndex(self, keyword):
+        if keyword=='e':
+            return 0
+        elif keyword=='n':
+            return 1
+        elif keyword=='g':
+            return 2
+        elif keyword=='l':
+            return 3
+        elif keyword=='i':
+            return 4
+        elif keyword=='s':
+            return 5
+        elif keyword=='h':
+            return 6
+        else:
+            print("Invalid Input!")
+            raise SystemExit
+
+    def generateHint(self, keyword):
+        if keyword=='e':
+            print('Hint: ready to fall a sleep')
+        elif keyword=='n':
+            print('Hint: adverb, in a kind and amiable manner')
+        elif keyword=='g':
+            print('Hint: adjective, feeling/showing anger')
+        elif keyword=='l':
+            print('Hint: adjective, tasting/containing salt')
+        elif keyword=='i':
+            print('Hint: adjective, making much noise')
+        elif keyword=='s':
+            print('Hint: adverb, without trouble')
+        elif keyword=='h':
+            print('Hint: adverb, with a feeling a shame')
+
+    def updateStatus(self, index):
+        self.status[index]=True
+        self.listQuest[index]=self.question[index]
+
+    def __contains__(self, angka):
+        return angka in self.status
+    
+    def cekStatus(self, x):
+        return self.status[x]
+
+class Players:
+    def __init__(self, nama):
+        self.nama=nama
+
+    def guess(self, key):
+        ans=input("Write your answer: ")
+        if ans==key:
+            print("You're right!!")
+            return True
+        else:
+            print("Try again!!")
+            return False
+
+
+def mainkan(game, player):
+    game.cetak_papan()
+
+    angka=0
+    while (angka in game):
+        key=input('Input a key question (e,n,g,l,i,s,h): ')
+        x = game.cekIndex(key)
+        if (game.cekStatus(x)==0):
+            game.generateHint(key)
+            quest=game.getQuestion(x)
+            answer=pemain.guess(quest)
+            if (answer):
+                game.updateStatus(x)
+        time.sleep(0.8)
+        game.cetak_papan()
+
+    print(f"Congratulations, you Win {player.nama}!")
+
+if __name__ == '__main__':
+    pemain = Players('Eko')
+    q = Quiz()
+    mainkan(q, pemain)
