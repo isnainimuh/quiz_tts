@@ -1,0 +1,179 @@
+import time
+import math
+import random
+
+
+class Player():
+    def __init__(self, letter):
+        self.letter = letter
+
+    def get_move(self, game):
+        pass
+
+
+class HumanPlayer(Player):
+    def __init__(self, letter):
+        super().__init__(letter)
+
+    def get_move(self, game):
+        valid_square = False
+        val = None
+        while not valid_square:
+            square = input(self.letter + '\'s turn. Input move (0-8): ')
+            try:
+                val = int(square)
+                if val not in game.pergerakan_ok():
+                    raise ValueError
+                valid_square = True
+            except ValueError:
+                print('Invalid square. Try again.')
+        return val
+
+
+class RandomComputerPlayer(Player):
+    def __init__(self, letter):
+        super().__init__(letter)
+
+    def get_move(self, game):
+        square = random.choice(game.pergerakan_ok())
+        return square
+
+
+class SmartComputerPlayer(Player):
+    def __init__(self, letter):
+        super().__init__(letter)
+
+    def get_move(self, game):
+        if len(game.available_moves()) == 9:
+            square = random.choice(game.available_moves())
+        else:
+            square = self.minimax(game, self.letter)['position']
+        return square
+
+    def minimax(self, state, player):
+        max_player = self.letter  # yourself
+        other_player = 'O' if player == 'X' else 'X'
+
+        # first we want to check if the previous move is a winner
+        if state.current_winner == other_player:
+            return {'position': None, 'score': 1 * (state.num_empty_squares() + 1) if other_player == max_player else -1 * (
+                        state.num_empty_squares() + 1)}
+        elif not state.empty_squares():
+            return {'position': None, 'score': 0}
+
+        if player == max_player:
+            best = {'position': None, 'score': -math.inf}  # each score should maximize
+        else:
+            best = {'position': None, 'score': math.inf}  # each score should minimize
+        for possible_move in state.available_moves():
+            state.make_move(possible_move, player)
+            sim_score = self.minimax(state, other_player)  # simulate a game after making that move
+
+            # undo move
+            state.board[possible_move] = ' '
+            state.current_winner = None
+            sim_score['position'] = possible_move  # this represents the move optimal next move
+
+            if player == max_player:  # X is max player
+                if sim_score['score'] > best['score']:
+                    best = sim_score
+            else:
+                if sim_score['score'] < best['score']:
+                    best = sim_score
+        return best
+        
+        
+        
+
+class TicTacToe:
+    def __init__(self):
+        self.papan=[' ' for i in range(9)] #list utk menampilkan papan 3x3
+        self.pemenang_sekarang= None
+    
+    def cetak_papan(self):
+        #menampilkan baris papan
+        for baris in [self.papan[i*3:(i+1)*3] for i in range(3)]:
+            print('|' + '|'.join(baris) + '|')
+    
+    @staticmethod
+    def cetak_papan_angka():
+        # 0 | 1 | 2 (memberi tahu kolom nomor berapa )
+        angka_papan=[[str(i) for i in range(j*3, (j+1)*3)] for j in range(3)]
+        for baris in angka_papan:
+            print('| ' + ' | '.join(baris) + ' | ')
+    
+    def pergerakan_ok(self):
+        return [i for i, spot in enumerate(self.papan) if spot==' ']
+    
+    def kotak_kosong(self):
+        return ' ' in self.papan
+    
+    def jumlah_kotak_kosong(self):
+        return self.papan.count(' ')
+    
+    def bergerak(self, kotak, huruf):
+        if self.papan[kotak]==' ':
+            self.papan[kotak]=huruf
+            if self.pemenang(kotak, huruf):
+                self.pemenang_sekarang=huruf
+            return True
+        return False
+    
+    def pemenang(self, kotak, huruf):
+        baris_index=kotak // 3
+        baris=self.papan[baris_index*3 : (baris_index + 1)*3]
+        if all([spot == huruf for spot in baris]):
+            return True
+        
+        kolom_index= kotak % 3
+        kolom=[self.papan[kolom_index+i*3] for i in range(3)]
+        if all([spot == huruf for spot in kolom]):
+            return True
+        
+        if kotak % 2 == 0:
+            diagonal1 = [self.papan [i] for i in [0,4,8]]
+            if all([spot == huruf for spot in diagonal1]):
+                return True
+            
+            diagonal2 = [self.papan [i] for i in [2,4,6]]
+            if all([spot == huruf for spot in diagonal2]):
+                return True
+
+        return False
+            
+
+def mainkan(game, pemain_x, pemain_o, cetak_game=True):
+    if cetak_game:
+        game.cetak_papan_angka()
+    
+    huruf= 'X'
+
+    while game.kotak_kosong():
+        if huruf=='O':
+            kotak=pemain_o.get_move(game)
+        else:
+            kotak=pemain_x.get_move(game)
+        
+        if game.bergerak(kotak, huruf):
+            if cetak_game:
+                print(f"{huruf} bergerak ke kotak {kotak} ")
+                game.cetak_papan()
+                print('')
+            
+            if game.pemenang_sekarang:
+                if cetak_game:
+                    print(huruf, "menang!")
+                return huruf
+
+            huruf = 'O' if huruf == 'X' else 'X'
+        
+        time.sleep(0.8)
+
+    if cetak_game:
+        print("Hasil seri!")
+
+if __name__ =='__main__' :
+    pemain_x = HumanPlayer('X')
+    pemain_o = RandomComputerPlayer('O')
+    t = TicTacToe()
+    mainkan(t, pemain_x, pemain_o, cetak_game=True)
